@@ -1,10 +1,10 @@
 pipeline {
     agent any
 
-    tools {
+  /*  tools {
         maven 'MAVEN_HOME'
         jdk 'JAVA_HOME'
-    }
+    }*/
 
     parameters {
         choice(name: 'BROWSER', choices: ['chrome-headless', 'chrome', 'firefox', 'edge'], description: 'Browser to run tests on')
