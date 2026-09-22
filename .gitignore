@@ -1,0 +1,27 @@
+# Compiled binaries and build output
+target/
+*.class
+
+# Log files
+*.log
+
+# Extent Reports and failure screenshots
+reports/
+test-output/
+
+# IDE configurations
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+.vscode/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Package locks
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup

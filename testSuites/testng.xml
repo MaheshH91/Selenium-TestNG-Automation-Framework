@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Regression Suite" parallel="tests" thread-count="2">
+
+    <listeners>
+        <listener class-name="rahulshettyacademy.tests.TestComponents.Listeners"/>
+        <listener class-name="rahulshettyacademy.tests.TestComponents.AnnotationTransformer"/>
+    </listeners>
+
+    <test name="Submit Order Test">
+        <classes>
+            <class name="rahulshettyacademy.tests.SubmitOrderTest"/>
+        </classes>
+    </test>
+
+    <test name="Error Validations Test">
+        <classes>
+            <class name="rahulshettyacademy.tests.ErrorValidationsTest"/>
+        </classes>
+    </test>
+
+</suite>
