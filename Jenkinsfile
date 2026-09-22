@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven-3.9.9'   // Must match your Maven tool name in Jenkins Global Tool Configuration
-        jdk 'JDK-21'          // Must match your Java tool name in Jenkins Global Tool Configuration
+        maven 'MAVEN_HOME'
+        jdk 'JAVA_HOME'
     }
 
     parameters {
