@@ -1,18 +1,30 @@
 package rahulshettyacademy.data;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.testng.annotations.DataProvider;
 
-import rahulshettyacademy.utils.JsonUtils;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TestDataProvider {
 
-    @DataProvider(name = "purchaseOrderData")
-    public static Object[][] getPurchaseData() {
-        // Reads from src/test/resources/testData/PurchaseOrder.json via ClassLoader
-        List<HashMap<String, String>> data = JsonUtils.getJsonDataToMapList("testData/PurchaseOrder.json");
+    // Set parallel = true for multi-threaded test execution per data row
+    @DataProvider(name = "purchaseOrderData", parallel = true)
+    public static Object[][] getPurchaseOrderData() throws IOException {
+        String jsonPath = System.getProperty("user.dir") + "/src/test/java/rahulshettyacademy/data/PurchaseOrder.json";
+
+        String jsonContent = FileUtils.readFileToString(new File(jsonPath), StandardCharsets.UTF_8);
+        ObjectMapper mapper = new ObjectMapper();
+        List<HashMap<String, String>> data = mapper.readValue(
+            jsonContent,
+            new TypeReference<List<HashMap<String, String>>>() {}
+        );
 
         Object[][] testData = new Object[data.size()][1];
         for (int i = 0; i < data.size(); i++) {

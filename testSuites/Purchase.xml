@@ -7,8 +7,9 @@
 		</run>
 	</groups>
 	<listeners>
-		<listener class-name="rahulshettyacademy.tests.TestComponents.Listeners"></listener>
-	</listeners>
+        <listener class-name="rahulshettyacademy.tests.TestComponents.Listeners"/>
+        <listener class-name="rahulshettyacademy.tests.TestComponents.AnnotationTransformer"/>
+    </listeners>
 	<test thread-count="5" name="Submit Order Test">
 		<classes>
 			<class name="rahulshettyacademy.tests.SubmitOrderTest" />

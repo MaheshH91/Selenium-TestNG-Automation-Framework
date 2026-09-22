@@ -2,12 +2,10 @@ package rahulshettyacademy.tests.TestComponents;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.Dimension;
@@ -21,61 +19,58 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Optional;
+import org.testng.annotations.Parameters;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import rahulshettyacademy.pageObjects.LandingPage;
+import rahulshettyacademy.utils.ConfigReader;
 
 public class BaseTest {
 
     private static final ThreadLocal<WebDriver> tdriver = new ThreadLocal<>();
     public LandingPage landingPage;
-    public Properties prop;
 
     public static WebDriver getDriver() {
         return tdriver.get();
     }
 
-    public WebDriver initializeDriver() throws IOException {
-        prop = new Properties();
-        try (InputStream fis = getClass().getClassLoader().getResourceAsStream("config.properties")) {
-            if (fis == null) {
-                throw new RuntimeException("config.properties file not found on classpath!");
-            }
-            prop.load(fis);
-        }
-     // Inside initializeDriver() in BaseTest.java
-        String browserName = System.getProperty("browser") != null 
-                ? System.getProperty("browser") 
-                : prop.getProperty("browser");
+    /**
+     * Browser resolution order:
+     * 1. Maven CLI property: -Dbrowser=...
+     * 2. TestNG XML parameter: <parameter name="browser" value="..." />
+     * 3. ConfigReader file property (default fallback)
+     */
+    public WebDriver initializeDriver(String xmlBrowser) {
+        String browserName = System.getProperty("browser") != null
+                ? System.getProperty("browser")
+                : (xmlBrowser != null ? xmlBrowser : ConfigReader.getProperty("browser", "chrome"));
 
+        browserName = browserName.toLowerCase();
         WebDriver driver;
+
         if (browserName.contains("chrome")) {
             ChromeOptions options = new ChromeOptions();
             if (browserName.contains("headless")) {
-                options.addArguments("--headless=new");
-                options.addArguments("--no-sandbox");
-                options.addArguments("--disable-dev-shm-usage");
-                options.addArguments("--window-size=1920,1080");
+                options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--window-size=1920,1080");
             }
             driver = new ChromeDriver(options);
             driver.manage().window().setSize(new Dimension(1920, 1080));
         } else if (browserName.contains("firefox")) {
             FirefoxOptions options = new FirefoxOptions();
             if (browserName.contains("headless")) {
-                options.addArguments("-headless");
-                options.addArguments("--width=1920");
-                options.addArguments("--height=1080");
+                options.addArguments("-headless", "--width=1920", "--height=1080");
             }
             driver = new FirefoxDriver(options);
-        } else if (browserName.equalsIgnoreCase("edge")) {
+        } else if (browserName.contains("edge")) {
             driver = new EdgeDriver();
         } else {
             throw new RuntimeException("Unsupported browser: " + browserName);
         }
 
-        int waitTimeout = Integer.parseInt(prop.getProperty("timeout", "10"));
+        int waitTimeout = ConfigReader.getIntProperty("timeout", 10);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(waitTimeout));
         driver.manage().window().maximize();
 
@@ -83,22 +78,13 @@ public class BaseTest {
         return getDriver();
     }
 
+    @Parameters({"browser"})
     @BeforeMethod(alwaysRun = true)
-    public LandingPage launchApplication() throws IOException {
-        WebDriver driver = initializeDriver();
+    public LandingPage launchApplication(@Optional String browser) {
+        WebDriver driver = initializeDriver(browser);
         landingPage = new LandingPage(driver);
-        landingPage.goTo(prop.getProperty("url"));
+        landingPage.goTo(ConfigReader.getProperty("url"));
         return landingPage;
-    }
-
-    public String getScreenshotBase64(WebDriver driver) {
-        return ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
-    }
-
-    public List<HashMap<String, String>> getJsonDataToMap(String filePath) throws IOException {
-        String jsonContent = FileUtils.readFileToString(new File(filePath), StandardCharsets.UTF_8);
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(jsonContent, new TypeReference<List<HashMap<String, String>>>() {});
     }
 
     @AfterMethod(alwaysRun = true)
@@ -107,5 +93,19 @@ public class BaseTest {
             getDriver().quit();
             tdriver.remove();
         }
+    }
+
+    public String getScreenshotBase64(WebDriver driver) {
+        return ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
+    }
+
+    /**
+     * Utility method for TestNG @DataProvider methods to convert JSON data files
+     * into a List of HashMaps.
+     */
+    public List<HashMap<String, String>> getJsonDataToMap(String filePath) throws IOException {
+        String jsonContent = FileUtils.readFileToString(new File(filePath), StandardCharsets.UTF_8);
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(jsonContent, new TypeReference<List<HashMap<String, String>>>() {});
     }
 }

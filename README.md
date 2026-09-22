@@ -1,613 +1,515 @@
-# Selenium TestNG Automation Framework (RSA E-Commerce)
-
-An enterprise-ready, data-driven test automation framework built using **Selenium WebDriver (Java 21)** and **TestNG**. It automates the end-to-end shopping workflow on the Rahul Shetty Academy client portal with parallel execution, thread-safe session handling, and ExtentReports reporting.
-
----
-
-## 🏗️ Architecture & Features
-
-- **Design Pattern**: Page Object Model (POM) with component-level abstraction.
-- **Thread Safety**: Isolated `ThreadLocal<WebDriver>` instances to enable concurrency across parallel tests.
-- **Data-Driven**: Externalized datasets in JSON format parsed dynamically via Jackson.
-- **Resilience**: Dynamic retry logic via TestNG `IAnnotationTransformer` for transient errors.
-- **Reporting**: ExtentReports 5 with inline Base64 failure screenshots.
-- **CI/CD Ready**: Fully compatible with headless executions via Jenkins pipelines.
-
----
-
-## 📂 Project Structure
-
-```text
-SeleniumFrameWorkDesignRSA/
-├── pom.xml                                  # Project dependencies and profiles
-├── testSuites/                              # TestNG suite XML definitions
-│   ├── testng.xml                           # Parallel regression suite
-│   ├── Purchase.xml                         # E2E purchase flow
-│   └── ErrorValidationTests.xml             # Negative test suite
-├── src/
-│   ├── main/java/rahulshettyacademy/
-│   │   ├── abstractComponents/              # Reusable page components & explicit waits
-│   │   └── pageObjects/                     # Page Object classes
-│   └── test/
-│       ├── java/rahulshettyacademy/
-│       │   ├── tests/                       # TestNG test classes
-│       │   ├── testComponents/              # BaseTest, Listeners, Retry analyzers
-│       │   ├── data/                        # JSON DataReader and @DataProvider bindings
-│       │   └── resources/                   # ExtentReporter configuration
-│       └── resources/                       # Config properties & JSON test data
-└── reports/                                 # Generated HTML test execution reports
-```
-
----
-
 ## ⚙️ Prerequisites
 
-Before running the project, install:
+Before running the project, ensure the following are installed and configured:
 
-- **JDK 21**
-- **Maven**
-- **Google Chrome**
-- **Mozilla Firefox** (only if Firefox execution is required)
-- IDE such as Eclipse, IntelliJ IDEA, or VS Code (optional)
+* **Java JDK:** Version 21
+* **Apache Maven:** Version 3.9+
+* **Google Chrome**
+* **Mozilla Firefox**
+* **Microsoft Edge**
+* **Git** — recommended for source-code management
 
-Verify Java:
+### Verify Java
 
 ```bash
 java -version
 ```
 
-Verify Maven:
+Expected:
+
+```text
+java version "21..."
+```
+
+### Verify Maven
 
 ```bash
 mvn -version
 ```
 
-Make sure Maven is using the intended Java 21 installation.
+Ensure Maven is using Java 21.
 
 ---
 
 ## 📦 Install Dependencies
 
-From the project root:
+To clean the project, compile the source code, and download all Maven dependencies:
 
 ```bash
-mvn clean install
+mvn clean install -DskipTests
 ```
 
-Or run the tests directly:
+Alternatively, to resolve Maven dependencies without running the tests:
 
 ```bash
-mvn clean test
+mvn dependency:resolve
 ```
-
-Maven will download the dependencies defined in `pom.xml`.
 
 ---
 
 ## ▶️ How to Run Tests
 
-### Run full regression suite on Chrome (default)
+### Run Full Regression Suite
+
+Chrome is the default browser:
 
 ```bash
 mvn clean test
 ```
 
-### Run tests in Headless mode
+### Run Tests in Chrome Headless Mode
 
 ```bash
 mvn clean test -Dbrowser=chromeheadless
 ```
 
-### Run tests on Firefox
+> The `chromeheadless` option must be supported by the framework's `DriverFactory`/browser configuration.
+
+### Run Tests on Firefox
 
 ```bash
 mvn clean test -Dbrowser=firefox
 ```
 
-### Run specific suite using Maven Profiles
+### Run Tests on Microsoft Edge
+
+```bash
+mvn clean test -Dbrowser=edge
+```
+
+---
+
+## 🧪 TestNG Suite Execution
+
+The framework supports execution through TestNG XML suites and Maven profiles.
+
+| Profile           | Suite XML                             | Focus                          |
+| ----------------- | ------------------------------------- | ------------------------------ |
+| `Regression`      | `testSuites/testng.xml`               | Complete regression suite      |
+| `Purchase`        | `testSuites/Purchase.xml`             | End-to-end purchase workflow   |
+| `ErrorValidation` | `testSuites/ErrorValidationTests.xml` | Login and validation scenarios |
+
+### Run Regression Suite
 
 ```bash
 mvn clean test -PRegression
 ```
 
-```bash
-mvn clean test -PPurchase
-```
-
-```bash
-mvn clean test -PErrorValidation
-```
-
----
-
-## 🧪 TestNG Suites
-
-### Regression
-
-```text
-testSuites/testng.xml
-```
-
-Used for the regression test execution.
-
-Run:
-
-```bash
-mvn clean test -PRegression
-```
-
-### Purchase
-
-```text
-testSuites/Purchase.xml
-```
-
-Used for the end-to-end purchase workflow.
-
-Run:
+### Run Purchase Suite
 
 ```bash
 mvn clean test -PPurchase
 ```
 
-### Error Validation
-
-```text
-testSuites/ErrorValidationTests.xml
-```
-
-Used for negative/error validation scenarios.
-
-Run:
+### Run Error Validation Suite
 
 ```bash
 mvn clean test -PErrorValidation
 ```
 
----
+### Run a Specific Suite Directly
 
-## 🔄 Data-Driven Testing
+You can also override the suite XML property:
 
-Test data is externalized in JSON format and parsed using Jackson.
-
-The framework uses TestNG `@DataProvider` bindings to execute the same test flow with multiple datasets.
-
-Typical data includes:
-
-```text
-email
-password
-product
+```bash
+mvn clean test -DsuiteXmlFile=testSuites/Purchase.xml
 ```
 
-This allows one automation test to execute against multiple combinations of test data.
+---
+
+## 🔄 Data-Driven Architecture
+
+Test data is externalized in JSON format:
+
+```text
+src/test/resources/testData/PurchaseOrder.json
+```
+
+Example:
+
+```json
+[
+  {
+    "email": "user@example.com",
+    "password": "<password>",
+    "product": "ZARA COAT 3"
+  },
+  {
+    "email": "test@example.com",
+    "password": "<password>",
+    "product": "ADIDAS ORIGINAL"
+  }
+]
+```
+
+> **Security:** Do not commit real usernames, passwords, API keys, tokens, or other credentials to GitHub. Use environment variables, CI/CD secrets, or local configuration files.
+
+The JSON data is parsed into `HashMap<String, String>` objects through `JsonUtils`.
+
+Example TestNG test:
+
+```java
+@Test(
+    dataProvider = "purchaseOrderData",
+    dataProviderClass = TestDataProvider.class,
+    groups = {"Purchase"}
+)
+public void submitOrder(HashMap<String, String> input) {
+
+    String email = input.get("email");
+    String password = input.get("password");
+    String product = input.get("product");
+
+    // Test execution
+}
+```
 
 ---
 
-## 🧩 Page Object Model
+## 🧩 Page Object Model (POM)
 
-The framework follows the Page Object Model.
+The framework follows the Page Object Model design pattern.
 
 ```text
 Test Class
-    ↓
-Page Object
-    ↓
+    │
+    │ Assertions & Test Flow
+    ▼
+Page Objects
+    │
+    │ Locators & Page Actions
+    ▼
 Abstract Components
-    ↓
+    │
+    │ Common Navigation & Reusable Components
+    ▼
+Utilities
+    │
+    │ Waits, JavaScript, Configuration, JSON
+    ▼
 WebDriver
-    ↓
-Application
+    │
+    │ ThreadLocal Browser Session
+    ▼
+Browser
 ```
 
-Page Objects contain:
+### `AbstractComponents.java`
 
-- WebElement locators
-- Page-specific actions
-- Navigation methods
-- UI interaction methods
+Contains reusable functionality such as:
 
-Reusable functionality such as waits and common page operations is maintained in `abstractComponents`.
+* Header/navigation links
+* Cart navigation
+* Orders navigation
+* Explicit waits
+* JavaScript interactions
+* Common page-level operations
+
+### Page Objects
+
+Page Objects encapsulate:
+
+* WebElement locators
+* Page-specific actions
+* Page navigation
+
+Example:
+
+```java
+public class LoginPage extends AbstractComponents {
+
+    public LoginPage(WebDriver driver) {
+        super(driver);
+        PageFactory.initElements(driver, this);
+    }
+}
+```
+
+Page methods can return the next Page Object when an action causes navigation.
 
 ---
 
 ## 🧵 Parallel Execution & Thread Safety
 
-The framework supports parallel execution using isolated:
-
-```java
-ThreadLocal<WebDriver>
-```
-
-Each parallel test thread receives its own WebDriver instance.
-
-Conceptually:
-
-```text
-Thread 1 → WebDriver 1 → Test Data 1
-Thread 2 → WebDriver 2 → Test Data 2
-Thread 3 → WebDriver 3 → Test Data 3
-```
-
-This prevents one test thread from accidentally using another test's browser session.
-
----
-
-## 🔁 Retry Mechanism
-
-The framework uses TestNG `IAnnotationTransformer` for dynamic retry configuration.
-
-This allows transient failures to be retried automatically when configured.
-
-The retry-related implementation is maintained under:
-
-```text
-src/test/java/rahulshettyacademy/testComponents/
-```
-
----
-
-## ⏳ Explicit Waits
-
-Reusable explicit wait functionality is maintained in the abstract component layer.
+The framework uses `ThreadLocal<WebDriver>` to support parallel execution.
 
 Example:
 
 ```java
-WebDriverWait wait =
-        new WebDriverWait(driver, Duration.ofSeconds(10));
+private static final ThreadLocal<WebDriver> tdriver =
+        new ThreadLocal<>();
 
-WebElement element = wait.until(
-        ExpectedConditions.elementToBeClickable(locator)
-);
-
-element.click();
+public static WebDriver getDriver() {
+    return tdriver.get();
+}
 ```
 
-Prefer explicit waits for synchronization instead of unnecessary `Thread.sleep()` calls.
+Each execution thread receives its own WebDriver instance.
 
----
+This provides:
 
-## 🌍 Country Selection
+* Thread-safe browser sessions
+* Independent test execution
+* Support for parallel TestNG execution
+* Reduced risk of driver/session conflicts
 
-For the checkout country autocomplete, wait for the actual suggestion element rather than relying on a `.ta-results` container when that container is not available in the current DOM.
-
-Example:
+The driver is removed after test execution:
 
 ```java
-By countryOption =
-        By.xpath("//button[contains(@class,'ta-item')][2]");
+@AfterMethod(alwaysRun = true)
+public void tearDown() {
 
-WebDriverWait wait =
-        new WebDriverWait(driver, Duration.ofSeconds(10));
-
-WebElement option = wait.until(
-        ExpectedConditions.elementToBeClickable(countryOption)
-);
-
-option.click();
+    if (getDriver() != null) {
+        getDriver().quit();
+        tdriver.remove();
+    }
+}
 ```
 
-If the application provides a stable country-name attribute/text, a country-specific locator can be used instead of selecting the second suggestion.
+Using `ThreadLocal.remove()` also helps prevent stale thread-local references when worker threads are reused.
 
 ---
 
-## ❌ Login Error Validation
+## 🔁 Dynamic Retry Mechanism
 
-The application error message used by the current test is:
+The framework provides automatic retry support for transient failures.
 
-```text
-Incorrect email or password.
-```
+### `Retry.java`
 
-The expected assertion should match the displayed text exactly:
+Implements TestNG's:
 
 ```java
-Assert.assertEquals(
-        actualMessage,
-        "Incorrect email or password.",
-        "Login error message mismatch."
-);
+IRetryAnalyzer
 ```
 
-These two values are different:
+The retry mechanism reruns a failed test according to the configured retry count.
 
-```text
-Incorrect email password.
-Incorrect email or password.
+### `AnnotationTransformer.java`
+
+Implements:
+
+```java
+IAnnotationTransformer
 ```
 
-Therefore, `Assert.assertEquals()` will fail when the expected value does not exactly match the actual application message.
+It dynamically applies the retry analyzer to tests, avoiding the need to add the retry annotation manually to every test method.
 
 ---
 
-## 📊 ExtentReports
+## 📊 ExtentReports & Screenshots
 
-ExtentReports 5 is used for HTML test execution reporting.
-
-Generated reports are maintained under:
-
-```text
-reports/
-```
-
-Example:
+After execution, the framework generates an HTML execution report:
 
 ```text
 reports/index.html
 ```
 
-Open the generated HTML report in a browser after execution.
+The report provides:
 
-The report can provide:
+* Test execution status
+* Passed/failed test details
+* Failure information
+* Screenshots
+* Execution logs
 
-- Test execution status
-- Passed tests
-- Failed tests
-- Failure details
-- Screenshots
-- Test execution information
+### Failed-Test Screenshots
 
----
+Screenshots can be attached directly to failed test nodes using Base64 encoding.
 
-## 📸 Failure Screenshots
+This avoids dependency on relative screenshot file paths and makes the report easier to archive in CI/CD environments.
 
-The framework supports inline Base64 screenshots for failures through ExtentReports.
+### Headless/CI Environment
 
-When a test fails, the listener/reporting implementation can attach the screenshot to the corresponding ExtentReports test entry.
-
----
-
-## 🤖 CI/CD / Jenkins
-
-The framework is designed to support CI/CD execution.
-
-For headless execution:
-
-```bash
-mvn clean test -Dbrowser=chromeheadless
-```
-
-A Jenkins pipeline can invoke the same Maven command.
-
-Example pipeline command:
-
-```bash
-mvn clean test -Dbrowser=chromeheadless
-```
-
----
-
-## 🛠️ Common Maven Commands
-
-### Clean the project
-
-```bash
-mvn clean
-```
-
-### Compile the project
-
-```bash
-mvn compile
-```
-
-### Compile test sources
-
-```bash
-mvn test-compile
-```
-
-### Run tests
-
-```bash
-mvn test
-```
-
-### Clean and run tests
-
-```bash
-mvn clean test
-```
-
-### Install the project
-
-```bash
-mvn clean install
-```
-
-### Run Regression
-
-```bash
-mvn clean test -PRegression
-```
-
-### Run Purchase
-
-```bash
-mvn clean test -PPurchase
-```
-
-### Run Error Validation
-
-```bash
-mvn clean test -PErrorValidation
-```
-
-### Run Chrome headless
-
-```bash
-mvn clean test -Dbrowser=chromeheadless
-```
-
-### Run Firefox
-
-```bash
-mvn clean test -Dbrowser=firefox
-```
-
----
-
-## 🐞 Troubleshooting
-
-### ElementClickInterceptedException
-
-If Selenium reports:
-
-```text
-ElementClickInterceptedException
-element is not clickable
-```
-
-use an explicit clickable wait:
+When running on Linux CI agents, browser-opening code should check whether the environment is graphical:
 
 ```java
-WebDriverWait wait =
-        new WebDriverWait(driver, Duration.ofSeconds(10));
-
-WebElement element = wait.until(
-        ExpectedConditions.elementToBeClickable(locator)
-);
-
-element.click();
+if (!GraphicsEnvironment.isHeadless()) {
+    // Open report in browser
+}
 ```
 
-If required, scroll the element into view before clicking.
+This prevents `HeadlessException` when running Jenkins or other CI agents without a display.
 
 ---
 
-### TimeoutException for `.ta-results`
+## 🤖 Jenkins / CI-CD Integration
 
-If you see:
+The framework can be executed from Jenkins using Maven.
 
-```text
-TimeoutException:
-waiting for visibility of element found by
-By.cssSelector: .ta-results
-```
-
-the `.ta-results` locator may not exist in the current page DOM.
-
-Instead, wait for the actual country suggestion:
-
-```java
-By countryOption =
-        By.xpath("//button[contains(@class,'ta-item')][2]");
-
-wait.until(
-        ExpectedConditions.elementToBeClickable(countryOption)
-);
-```
-
----
-
-### Assertion Failure
-
-If you see:
-
-```text
-Expected: Incorrect email password.
-Actual:   Incorrect email or password.
-```
-
-update the expected value to:
-
-```text
-Incorrect email or password.
-```
-
----
-
-### Java Version Mismatch
-
-Check:
+### Jenkins Execution Command
 
 ```bash
-java -version
+mvn clean test -Dbrowser=chromeheadless -PRegression
+```
+
+### Recommended Jenkins Artifacts
+
+Archive:
+
+```text
+reports/**
 ```
 
 and:
 
-```bash
-mvn -version
+```text
+target/surefire-reports/**
 ```
 
-The project is configured for Java 21.
+For example:
+
+```text
+target/surefire-reports/testng-results.xml
+```
+
+Depending on the Jenkins configuration, these artifacts can be retained after the build for debugging and reporting.
+
+### Jenkins HTML Report
+
+If Jenkins blocks CSS/JavaScript resources in an archived HTML report because of its Content Security Policy, the Jenkins administrator can review the CSP configuration.
+
+A commonly used Jenkins Script Console setting is:
+
+```groovy
+System.setProperty(
+    "hudson.model.DirectoryBrowserSupport.CSP",
+    ""
+)
+```
+
+> **Security note:** Disabling Jenkins CSP reduces browser-side security protections. Apply this only when appropriate for your Jenkins environment and preferably use a more restrictive CSP configuration when possible.
 
 ---
 
-## 📋 Recommended Execution Flow
+## 🐞 Common Troubleshooting
+
+| Issue / Error                                  | Possible Cause                                                | Solution                                                       |
+| ---------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------- |
+| `ElementClickInterceptedException`             | Dropdown, overlay, or animation blocks the element            | Use an explicit wait or JavaScript click when appropriate      |
+| `Resource file not found on classpath`         | Resource is outside the Maven test classpath                  | Place configuration/data files under `src/test/resources/`     |
+| `AssertionError: Login error message mismatch` | Expected text doesn't match the application                   | Verify the actual application message and update the assertion |
+| `Tests run: 0`                                 | Incorrect TestNG suite/group configuration                    | Verify `<classes>`, `<packages>`, and group configuration      |
+| `TimeoutException`                             | Element did not become available within the wait period       | Review locator, application state, and explicit wait           |
+| `NoSuchElementException`                       | Incorrect/stale locator or page not loaded                    | Validate locator and synchronize with the page                 |
+| `SessionNotCreatedException`                   | Browser/driver compatibility issue                            | Update browser/Selenium version or use Selenium Manager        |
+| `HeadlessException`                            | Attempt to open a browser/report in a headless CI environment | Check `GraphicsEnvironment.isHeadless()`                       |
+| `StaleElementReferenceException`               | DOM refreshed after locating the element                      | Re-locate the element before interacting                       |
+| `ElementNotInteractableException`              | Element exists but cannot currently be interacted with        | Wait for visibility/clickability and verify page state         |
+
+---
+
+## 🏗️ Framework Execution Flow
 
 ```text
-1. Clone/Open the project
-          ↓
-2. Verify Java 21
-          ↓
-3. Verify Maven
-          ↓
-4. Run mvn clean install
-          ↓
-5. Select the required browser/suite
-          ↓
-6. Execute Maven command
-          ↓
-7. Review console execution
-          ↓
-8. Open reports/index.html
-          ↓
-9. Check failures and screenshots
-          ↓
-10. Check target/surefire-reports if required
+Maven Command
+     │
+     ▼
+TestNG Suite
+     │
+     ▼
+BaseTest
+     │
+     ▼
+WebDriver Initialization
+     │
+     ▼
+ThreadLocal<WebDriver>
+     │
+     ▼
+Test Class
+     │
+     ▼
+Page Object
+     │
+     ▼
+Abstract Components
+     │
+     ▼
+Utilities
+     │
+     ▼
+Application Under Test
+     │
+     ▼
+Assertions
+     │
+     ▼
+ExtentReports
+     │
+     ▼
+Screenshots / Test Results
+```
+
+---
+
+## 📁 Recommended Project Structure
+
+```text
+SeleniumAutomationFramework/
+│
+├── pom.xml
+├── README.md
+│
+├── src/
+│   ├── main/
+│   │   └── java/
+│   │       ├── pageObjects/
+│   │       ├── AbstractComponents/
+│   │       └── utils/
+│   │
+│   └── test/
+│       ├── java/
+│       │   ├── tests/
+│       │   ├── testComponents/
+│       │   └── listeners/
+│       │
+│       └── resources/
+│           ├── testData/
+│           │   └── PurchaseOrder.json
+│           └── config.properties
+│
+├── testSuites/
+│   ├── testng.xml
+│   ├── Purchase.xml
+│   └── ErrorValidationTests.xml
+│
+├── reports/
+│
+└── target/
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-For a new machine:
+Clone the repository and run:
 
 ```bash
-git clone <repository-url>
-cd SeleniumFrameWorkDesignRSA
-mvn clean install
-mvn clean test
+mvn clean install -DskipTests
 ```
 
-For headless Chrome:
-
-```bash
-mvn clean test -Dbrowser=chromeheadless
-```
-
-For Purchase:
-
-```bash
-mvn clean test -PPurchase
-```
-
-For Error Validation:
-
-```bash
-mvn clean test -PErrorValidation
-```
-
-For Regression:
+Then execute the regression suite:
 
 ```bash
 mvn clean test -PRegression
 ```
 
----
+For CI/CD execution:
 
-## 📌 Notes
+```bash
+mvn clean test -Dbrowser=chromeheadless -PRegression
+```
 
-- Use Java 21 for this project.
-- Keep Maven configured to use the same JDK.
-- Prefer explicit waits over `Thread.sleep()`.
-- Keep page-specific UI actions inside Page Objects.
-- Keep reusable functionality inside `abstractComponents`.
-- Use JSON for externalized test data.
-- Use TestNG `@DataProvider` for multiple datasets.
-- Use `ThreadLocal<WebDriver>` for parallel execution.
-- Review ExtentReports after every execution.
-- Review `target/surefire-reports` when detailed Maven/TestNG results are required.
+After execution, check:
+
+```text
+reports/index.html
+```
+
+and:
+
+```text
+target/surefire-reports/
+```
+
+for execution results.

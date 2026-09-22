@@ -21,10 +21,10 @@
 		<commons.io.version>2.13.0</commons.io.version>
 		<surefire.version>3.2.5</surefire.version>
 		<compiler.plugin.version>3.13.0</compiler.plugin.version>
+		<suiteXmlFile>testSuites/testng.xml</suiteXmlFile>
 	</properties>
 
 	<dependencies>
-		<!-- Logging (Log4j2 + SLF4J implementation) -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
@@ -73,67 +73,29 @@
 	</dependencies>
 
 	<profiles>
-		<!-- Profile for Full Regression Suite -->
 		<profile>
 			<id>Regression</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<version>${surefire.version}</version>
-						<configuration>
-							<suiteXmlFiles>
-								<suiteXmlFile>testSuites/testng.xml</suiteXmlFile>
-							</suiteXmlFiles>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
+			<properties>
+				<suiteXmlFile>testSuites/testng.xml</suiteXmlFile>
+			</properties>
 		</profile>
-
-		<!-- Profile for Purchase Flow Suite -->
 		<profile>
 			<id>Purchase</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<version>${surefire.version}</version>
-						<configuration>
-							<suiteXmlFiles>
-								<suiteXmlFile>testSuites/Purchase.xml</suiteXmlFile>
-							</suiteXmlFiles>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
+			<properties>
+				<suiteXmlFile>testSuites/Purchase.xml</suiteXmlFile>
+			</properties>
 		</profile>
-
-		<!-- Profile for Error Validation Suite -->
 		<profile>
 			<id>ErrorValidation</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<version>${surefire.version}</version>
-						<configuration>
-							<suiteXmlFiles>
-								<suiteXmlFile>testSuites/ErrorValidationTests.xml</suiteXmlFile>
-							</suiteXmlFiles>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
+			<properties>
+				<suiteXmlFile>testSuites/ErrorValidationTests.xml</suiteXmlFile>
+			</properties>
 		</profile>
 	</profiles>
 
-	<build>
+<build>
 		<plugins>
-			<!-- Compiler Plugin compatible with Java 21 -->
+			<!-- Compiler Plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -143,15 +105,21 @@
 				</configuration>
 			</plugin>
 
-			<!-- Default Surefire Plugin (Active when no profile is explicitly passed) -->
+			<!-- Surefire Plugin (Single Consolidated Declaration) -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>${surefire.version}</version>
 				<configuration>
 					<suiteXmlFiles>
-						<suiteXmlFile>testSuites/testng.xml</suiteXmlFile>
+						<suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
 					</suiteXmlFiles>
+					<properties>
+						<property>
+							<name>dataproviderthreadcount</name>
+							<value>4</value>
+						</property>
+					</properties>
 				</configuration>
 			</plugin>
 		</plugins>

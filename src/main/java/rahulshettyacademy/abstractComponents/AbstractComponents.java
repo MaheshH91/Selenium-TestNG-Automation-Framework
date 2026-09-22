@@ -3,22 +3,26 @@ package rahulshettyacademy.abstractComponents;
 import java.time.Duration;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import rahulshettyacademy.pageObjects.CartPage;
 import rahulshettyacademy.pageObjects.OrderPage;
+import rahulshettyacademy.utils.JavaScriptUtils;
+import rahulshettyacademy.utils.WaitUtils;
 
 public class AbstractComponents {
+
     protected WebDriver driver;
+    protected WaitUtils waitUtils;
+    protected JavaScriptUtils jsUtils;
 
     public AbstractComponents(WebDriver driver) {
         this.driver = driver;
+        this.waitUtils = new WaitUtils(driver, Duration.ofSeconds(10));
+        this.jsUtils = new JavaScriptUtils(driver);
         PageFactory.initElements(driver, this);
     }
 
@@ -39,21 +43,20 @@ public class AbstractComponents {
     }
 
     public void waitForElementToAppear(By locator) {
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-            .until(ExpectedConditions.visibilityOfElementLocated(locator));
+        waitUtils.waitForVisibility(locator);
     }
 
     public void waitForElementToAppear(WebElement element) {
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-            .until(ExpectedConditions.visibilityOf(element));
+        waitUtils.waitForVisibility(element);
     }
 
     public void waitForElementToDisappear(WebElement element) {
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-            .until(ExpectedConditions.invisibilityOf(element));
+        waitUtils.waitForInvisibility(element);
     }
-
+    public void waitForElementToDisappear(By locator) {
+        waitUtils.waitForInvisibility(locator);
+    }
     public void scrollDown() {
-        ((JavascriptExecutor) driver).executeScript("window.scrollBy(0,200)");
+        jsUtils.scrollByPixels(0, 200);
     }
 }

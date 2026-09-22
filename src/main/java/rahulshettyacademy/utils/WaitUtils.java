@@ -32,7 +32,9 @@ public class WaitUtils {
     public boolean waitForInvisibility(WebElement element) {
         return wait.until(ExpectedConditions.invisibilityOf(element));
     }
-
+    public boolean waitForInvisibility(By locator) {
+        return wait.until(ExpectedConditions.invisibilityOfElementLocated(locator));
+    }
     public WebElement waitForClickability(WebElement element) {
         return wait.until(ExpectedConditions.elementToBeClickable(element));
     }
