@@ -37,26 +37,49 @@ public class AbstractComponents {
 
     public CartPage goToCartPage() {
 
-    	    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-    	    // Wait until Cart is present
-    	    wait.until(ExpectedConditions.visibilityOf(cartHeader));
+        // Wait for Cart element
+        wait.until(ExpectedConditions.visibilityOf(cartHeader));
 
-    	    // Scroll Cart into the center of the viewport
-    	    ((JavascriptExecutor) driver).executeScript(
-    	            "arguments[0].scrollIntoView({block:'center', inline:'center'});",
-    	            cartHeader
-    	    );
+        // Move page to the absolute top
+        ((JavascriptExecutor) driver).executeScript(
+                "window.scrollTo(0, 0);"
+        );
 
-    	    // Wait until it becomes clickable
-    	    wait.until(ExpectedConditions.elementToBeClickable(cartHeader));
+        // Wait until Cart is displayed and enabled
+        wait.until(driver -> {
+            try {
+                return cartHeader.isDisplayed()
+                        && cartHeader.isEnabled();
+            } catch (Exception e) {
+                return false;
+            }
+        });
 
-    	    // Normal Selenium click
-    	    cartHeader.click();
-    	
+        // Verify Cart position is inside viewport
+        wait.until(driver -> {
+            try {
+                Long y = (Long) ((JavascriptExecutor) driver)
+                        .executeScript(
+                                "return Math.round(arguments[0].getBoundingClientRect().top);",
+                                cartHeader);
+
+                return y >= 0;
+            } catch (Exception e) {
+                return false;
+            }
+        });
+        Long y = (Long) ((JavascriptExecutor) driver)
+                .executeScript(
+                        "return Math.round(arguments[0].getBoundingClientRect().top);",
+                        cartHeader);
+
+        System.out.println("Cart Y position before click: " + y);
+        cartHeader.click();
+
         return new CartPage(driver);
     }
-
     public OrderPage goToOrdersPage() {
         orderHeader.click();
         return new OrderPage(driver);
