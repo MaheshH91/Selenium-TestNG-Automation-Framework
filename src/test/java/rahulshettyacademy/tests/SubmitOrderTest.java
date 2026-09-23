@@ -27,7 +27,7 @@ public class SubmitOrderTest extends BaseTest {
         description = "Places an end-to-end order and verifies confirmation text"
     )
     public void submitOrder(HashMap<String, String> input) throws IOException, InterruptedException {
-        ProductCataloguePage productCatalogue = landingPage.loginApplication(
+        ProductCataloguePage productCatalogue = getLandingPage().loginApplication(
             input.get("email"),
             input.get("password")
         );
@@ -63,7 +63,7 @@ public class SubmitOrderTest extends BaseTest {
         description = "Verifies placed product exists in Orders History page"
     )
     public void orderHistoryTest(HashMap<String, String> input) {
-        ProductCataloguePage productCatalogue = landingPage.loginApplication(
+        ProductCataloguePage productCatalogue = getLandingPage().loginApplication(
             input.get("email"),
             input.get("password")
         );

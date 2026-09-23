@@ -12,19 +12,15 @@ import org.testng.annotations.DataProvider;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import rahulshettyacademy.utils.JsonUtils;
+
 public class TestDataProvider {
 
     // Set parallel = true for multi-threaded test execution per data row
     @DataProvider(name = "purchaseOrderData", parallel = true)
     public static Object[][] getPurchaseOrderData() throws IOException {
-        String jsonPath = System.getProperty("user.dir") + "/src/test/java/rahulshettyacademy/data/PurchaseOrder.json";
 
-        String jsonContent = FileUtils.readFileToString(new File(jsonPath), StandardCharsets.UTF_8);
-        ObjectMapper mapper = new ObjectMapper();
-        List<HashMap<String, String>> data = mapper.readValue(
-            jsonContent,
-            new TypeReference<List<HashMap<String, String>>>() {}
-        );
+        List<HashMap<String, String>> data = JsonUtils.getJsonDataToMapList("testdata/PurchaseOrder.json");
 
         Object[][] testData = new Object[data.size()][1];
         for (int i = 0; i < data.size(); i++) {

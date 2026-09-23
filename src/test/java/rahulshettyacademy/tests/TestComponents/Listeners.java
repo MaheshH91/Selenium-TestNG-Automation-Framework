@@ -1,5 +1,7 @@
 package rahulshettyacademy.tests.TestComponents;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.awt.Desktop;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
@@ -19,6 +21,7 @@ import rahulshettyacademy.resources.ExtentReporterNG;
 
 public class Listeners implements ITestListener {
 
+	private static final Logger log = LogManager.getLogger(Listeners.class);
 	private static final ExtentReports extent = ExtentReporterNG.getReportObject();
 	private static final ThreadLocal<ExtentTest> extentTest = new ThreadLocal<>();
 	private static final AtomicBoolean reportOpened = new AtomicBoolean(false);
@@ -33,6 +36,7 @@ public class Listeners implements ITestListener {
 			testName += " - " + Arrays.deepToString(params);
 		}
 
+		log.info(">>> STARTING TEST: {}", testName);
 		ExtentTest test = extent.createTest(testName);
 		extentTest.set(test);
 		extentTest.get().log(Status.INFO, "Test execution started.");
@@ -40,31 +44,53 @@ public class Listeners implements ITestListener {
 
 	@Override
 	public void onTestSuccess(ITestResult result) {
+		log.info(">>> TEST PASSED: {}", result.getMethod().getMethodName());
 		extentTest.get().log(Status.PASS, "Test executed successfully.");
 		extentTest.remove(); // Prevent ThreadLocal memory leaks
 	}
 
 	@Override
 	public void onTestFailure(ITestResult result) {
-		extentTest.get().log(Status.FAIL, "Test failed: " + result.getThrowable().getMessage());
-		extentTest.get().fail(result.getThrowable());
+		log.error(">>> TEST FAILED: {} | Reason: {}", result.getMethod().getMethodName(),
+				result.getThrowable() != null ? result.getThrowable().getMessage() : "Unknown Error");
 
-		WebDriver driver = BaseTest.getDriver();
-		Object instance = result.getInstance();
-
-		if (driver != null && instance instanceof BaseTest) {
-			try {
-				String base64Screenshot = ((BaseTest) instance).getScreenshotBase64(driver);
-				extentTest.get().addScreenCaptureFromBase64String(base64Screenshot, "Failure Snapshot");
-			} catch (Exception e) {
-				extentTest.get().log(Status.WARNING, "Failed to capture screenshot: " + e.getMessage());
+		try {
+			ExtentTest test = extentTest.get();
+			if (test == null) {
+				test = extent.createTest(result.getMethod().getMethodName());
+				extentTest.set(test);
 			}
+
+			test.log(Status.FAIL,
+					"Test failed: " + (result.getThrowable() != null ? result.getThrowable().getMessage() : ""));
+			test.fail(result.getThrowable());
+
+			WebDriver driver = BaseTest.getDriver();
+			Object instance = result.getInstance();
+
+			if (driver != null && instance instanceof BaseTest) {
+				try {
+					String base64Screenshot = ((BaseTest) instance).getScreenshotBase64(driver);
+					test.addScreenCaptureFromBase64String(base64Screenshot, "Failure Snapshot");
+				} catch (Exception e) {
+					log.warn("Failed to capture screenshot: {}", e.getMessage());
+					test.log(Status.WARNING, "Failed to capture screenshot: " + e.getMessage());
+				}
+			}
+		} finally {
+			safeRemoveThreadLocal();
 		}
-		extentTest.remove(); // Prevent ThreadLocal memory leaks
+	}
+
+	private void safeRemoveThreadLocal() {
+		if (extentTest.get() != null) {
+			extentTest.remove();
+		}
 	}
 
 	@Override
 	public void onTestSkipped(ITestResult result) {
+		log.warn(">>> TEST SKIPPED: {}", result.getMethod().getMethodName());
 		if (extentTest.get() == null) {
 			ExtentTest test = extent.createTest(result.getMethod().getMethodName());
 			extentTest.set(test);
@@ -89,14 +115,14 @@ public class Listeners implements ITestListener {
 
 	@Override
 	public void onStart(ITestContext context) {
-		System.out.println(">>> Test suite started: " + context.getName());
+		log.info("=== TEST SUITE STARTED: {} ===", context.getName());
 	}
 
 	@Override
 	public void onFinish(ITestContext context) {
 		extent.flush();
 		displayExtentReport();
-		System.out.println(">>> Test suite finished: " + context.getName());
+		log.info("=== TEST SUITE FINISHED: {} ===", context.getName());
 	}
 
 	public void displayExtentReport() {
@@ -110,7 +136,8 @@ public class Listeners implements ITestListener {
 				return;
 			}
 
-			// Atomic check BEFORE opening: ensures only the first finished thread triggers the browser
+			// Atomic check BEFORE opening: ensures only the first finished thread triggers
+			// the browser
 			if (reportOpened.getAndSet(true)) {
 				return;
 			}
@@ -133,7 +160,7 @@ public class Listeners implements ITestListener {
 			}
 
 		} catch (Exception e) {
-			System.err.println("Could not open Extent Report automatically: " + e.getMessage());
+			log.error("Could not auto-open Extent Report: {}", e.getMessage());
 		}
 	}
 }

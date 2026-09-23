@@ -10,10 +10,12 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import rahulshettyacademy.abstractComponents.AbstractComponents;
 
 public class ProductCataloguePage extends AbstractComponents {
+	private static final Logger log = LogManager.getLogger(ProductCataloguePage.class);
 
 	public ProductCataloguePage(WebDriver driver) {
 		super(driver);
@@ -36,6 +38,7 @@ public class ProductCataloguePage extends AbstractComponents {
 	}
 
 	public WebElement getProductByName(String productName) {
+		log.info("Searching for product: '{}'", productName);
 		return getProductList().stream()
 				.filter(product -> product.findElement(By.cssSelector("b")).getText().equalsIgnoreCase(productName))
 				.findFirst().orElse(null);
@@ -73,15 +76,15 @@ public class ProductCataloguePage extends AbstractComponents {
 			waitForElementToBeClickable(addToCartButton);
 
 			addToCartButton.click();
-
+			log.info("Clicked Add to Cart for '{}'", productName);
 			// Wait for Add to Cart confirmation toast
 			waitForElementToAppear(toastMessage);
 
 			// Wait for animation/spinner to disappear
 			waitForElementToDisappear(spinnerBy);
-
+			log.info("'{}' added to cart successfully", productName);
 		} else {
-
+			log.error("Product '{}' not found in catalogue", productName);
 			throw new RuntimeException("Product not found in catalogue: " + productName);
 		}
 	}
