@@ -1,515 +1,380 @@
-## ⚙️ Prerequisites
+# Enterprise Selenium Java Test Automation Framework
 
-Before running the project, ensure the following are installed and configured:
+![Java 25](https://img.shields.io/badge/Java-25-orange.svg)
+![Selenium WebDriver 4](https://img.shields.io/badge/Selenium-WebDriver%204-brightgreen.svg)
+![TestNG](https://img.shields.io/badge/TestNG-Testing-red.svg)
+![Maven](https://img.shields.io/badge/Maven-Build-C71A36.svg)
+![ExtentReports 5](https://img.shields.io/badge/ExtentReports-5-blue.svg)
+![Jenkins](https://img.shields.io/badge/Jenkins-Pipeline%20Ready-brightgreen.svg)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-blue.svg)
 
-* **Java JDK:** Version 21
-* **Apache Maven:** Version 3.9+
-* **Google Chrome**
-* **Mozilla Firefox**
-* **Microsoft Edge**
-* **Git** — recommended for source-code management
+A modular, data-driven UI test automation framework built with **Java 25, Selenium WebDriver 4, TestNG, Maven, and ExtentReports 5**. The framework uses the Page Object Model (POM), centralized browser management, reusable page and utility classes, and CI/CD pipelines for repeatable browser testing.
 
-### Verify Java
-
-```bash
-java -version
-```
-
-Expected:
-
-```text
-java version "21..."
-```
-
-### Verify Maven
-
-```bash
-mvn -version
-```
-
-Ensure Maven is using Java 21.
+It is designed for end-to-end web application testing, including authentication, product selection, cart validation, checkout workflows, regression testing, and negative/error validation.
 
 ---
 
-## 📦 Install Dependencies
+## Author & Profiles
 
-To clean the project, compile the source code, and download all Maven dependencies:
+- **GitHub Profile:** [MaheshH91](https://github.com/MaheshH91)
+- **LinkedIn Profile:** [Mahesh Holkar](https://www.linkedin.com/in/maheshholkarqaengineer/)
+
+---
+
+## Technology Stack
+
+| Technology | Purpose |
+|---|---|
+| Java 25 | Programming language |
+| Selenium WebDriver 4 | Browser automation |
+| TestNG | Test execution, grouping, suites, and data providers |
+| Apache Maven | Build and dependency management |
+| Page Object Model (POM) | Maintainable page-layer design |
+| Jackson / JSON | Data-driven test input and JSON parsing |
+| ExtentReports 5 | HTML execution reporting |
+| Git and GitHub | Source control |
+| Jenkins | CI/CD pipeline execution |
+| GitHub Actions | Automated workflow execution |
+
+---
+
+## Key Features
+
+- Page Object Model with reusable page classes
+- Centralized `DriverFactory` for browser setup
+- Thread-local WebDriver management for isolated test sessions
+- Chrome, Chrome headless, Firefox, and Edge execution options, subject to local configuration
+- Data-driven tests using JSON and TestNG DataProviders
+- Regression, purchase workflow, and error-validation suites
+- Explicit wait and JavaScript utility methods
+- TestNG listeners and retry support
+- ExtentReports HTML reports and failure screenshots
+- Maven-based execution
+- Jenkins and GitHub Actions CI/CD integration
+
+---
+
+## Prerequisites
+
+Install the following before running the project:
+
+- JDK 25 (use the JDK version configured by the project)
+- Apache Maven 3.9+
+- Google Chrome, Mozilla Firefox, or Microsoft Edge
+- Git
+- Network access to the test application
+
+Check Java and Maven:
+
+```bash
+java -version
+mvn -version
+```
+
+Confirm that `JAVA_HOME` points to the intended JDK.
+
+---
+
+## Clone the Repository
+
+```bash
+git clone https://github.com/MaheshH91/<your-selenium-java-testng-repository>.git
+cd <your-selenium-java-testng-repository>
+```
+
+Replace the placeholder repository name with the actual repository name.
+
+---
+
+## Build the Project
+
+Download dependencies and compile the project:
 
 ```bash
 mvn clean install -DskipTests
 ```
 
-Alternatively, to resolve Maven dependencies without running the tests:
+Compile source and test classes:
 
 ```bash
-mvn dependency:resolve
+mvn clean test-compile
 ```
 
 ---
 
-## ▶️ How to Run Tests
+## Run Tests
 
-### Run Full Regression Suite
-
-Chrome is the default browser:
+### Run the default TestNG suite
 
 ```bash
 mvn clean test
 ```
 
-### Run Tests in Chrome Headless Mode
+### Run in Chrome headless mode
 
 ```bash
-mvn clean test -Dbrowser=chromeheadless
+mvn clean test -Dbrowser=chrome-headless
 ```
 
-> The `chromeheadless` option must be supported by the framework's `DriverFactory`/browser configuration.
-
-### Run Tests on Firefox
+### Run in Firefox or Edge
 
 ```bash
 mvn clean test -Dbrowser=firefox
-```
-
-### Run Tests on Microsoft Edge
-
-```bash
 mvn clean test -Dbrowser=edge
 ```
 
+The supported browser property values depend on the implementation in `DriverFactory` and Maven configuration.
+
 ---
 
-## 🧪 TestNG Suite Execution
+## TestNG Suites and Maven Profiles
 
-The framework supports execution through TestNG XML suites and Maven profiles.
+The framework README/source configuration describes these suite files:
 
-| Profile           | Suite XML                             | Focus                          |
-| ----------------- | ------------------------------------- | ------------------------------ |
-| `Regression`      | `testSuites/testng.xml`               | Complete regression suite      |
-| `Purchase`        | `testSuites/Purchase.xml`             | End-to-end purchase workflow   |
-| `ErrorValidation` | `testSuites/ErrorValidationTests.xml` | Login and validation scenarios |
+| Suite / Profile | TestNG XML | Purpose |
+|---|---|---|
+| Regression | `testSuites/testng-regression.xml` | End-to-end regression coverage |
+| Purchase | `testSuites/testng-purchase.xml` | Checkout, order placement, and order verification |
+| Error Validation | `testSuites/testng-error-validation.xml` | Authentication failures, validation messages, and cart boundary checks |
 
-### Run Regression Suite
+Run suites by Maven profile:
 
 ```bash
 mvn clean test -PRegression
-```
-
-### Run Purchase Suite
-
-```bash
 mvn clean test -PPurchase
-```
-
-### Run Error Validation Suite
-
-```bash
 mvn clean test -PErrorValidation
 ```
 
-### Run a Specific Suite Directly
-
-You can also override the suite XML property:
+Run a specific suite XML file:
 
 ```bash
-mvn clean test -DsuiteXmlFile=testSuites/Purchase.xml
+mvn clean test -DsuiteXmlFile=testSuites/testng-purchase.xml
 ```
+
+Use the profile and suite names configured in your current `pom.xml`.
 
 ---
 
-## 🔄 Data-Driven Architecture
+## Data-Driven Testing
 
-Test data is externalized in JSON format:
+Test data is stored separately from test logic in JSON, for example:
 
-```text
-src/test/resources/testData/PurchaseOrder.json
-```
-
-Example:
+`src/test/resources/testdata/PurchaseOrder.json`
 
 ```json
 [
   {
     "email": "user@example.com",
-    "password": "<password>",
+    "password": "replace-with-test-password",
     "product": "ZARA COAT 3"
   },
   {
-    "email": "test@example.com",
-    "password": "<password>",
+    "email": "user2@example.com",
+    "password": "replace-with-test-password",
     "product": "ADIDAS ORIGINAL"
   }
 ]
 ```
 
-> **Security:** Do not commit real usernames, passwords, API keys, tokens, or other credentials to GitHub. Use environment variables, CI/CD secrets, or local configuration files.
+`JsonUtils` reads JSON data and `PurchaseDataProvider` supplies the test data to TestNG tests. Use dedicated test credentials and never commit real passwords, tokens, or other secrets.
 
-The JSON data is parsed into `HashMap<String, String>` objects through `JsonUtils`.
-
-Example TestNG test:
+Example test pattern:
 
 ```java
 @Test(
-    dataProvider = "purchaseOrderData",
-    dataProviderClass = TestDataProvider.class,
-    groups = {"Purchase"}
+    dataProvider = "purchaseOrders",
+    dataProviderClass = PurchaseDataProvider.class,
+    groups = {"Purchase", "Regression"}
 )
-public void submitOrder(HashMap<String, String> input) {
-
-    String email = input.get("email");
-    String password = input.get("password");
-    String product = input.get("product");
-
-    // Test execution
+public void submitOrderE2ETest(HashMap<String, String> data) {
+    // Use test data to log in, select a product, and validate checkout.
 }
 ```
 
+Adapt the example to the actual methods and package names in the project.
+
 ---
 
-## 🧩 Page Object Model (POM)
-
-The framework follows the Page Object Model design pattern.
+## Framework Architecture
 
 ```text
-Test Class
-    │
-    │ Assertions & Test Flow
-    ▼
-Page Objects
-    │
-    │ Locators & Page Actions
-    ▼
-Abstract Components
-    │
-    │ Common Navigation & Reusable Components
-    ▼
-Utilities
-    │
-    │ Waits, JavaScript, Configuration, JSON
-    ▼
-WebDriver
-    │
-    │ ThreadLocal Browser Session
-    ▼
-Browser
+Test Layer
+  └── BaseTest and test classes
+       └── Page Objects
+            ├── LoginPage
+            ├── ProductCatalogPage
+            ├── CartPage
+            ├── CheckoutPage
+            ├── OrderConfirmationPage
+            └── OrderHistoryPage
+                 └── BasePage and reusable utilities
+                      └── DriverFactory
+                           └── WebDriver browser session
 ```
 
-### `AbstractComponents.java`
+### Core Components
 
-Contains reusable functionality such as:
-
-* Header/navigation links
-* Cart navigation
-* Orders navigation
-* Explicit waits
-* JavaScript interactions
-* Common page-level operations
-
-### Page Objects
-
-Page Objects encapsulate:
-
-* WebElement locators
-* Page-specific actions
-* Page navigation
-
-Example:
-
-```java
-public class LoginPage extends AbstractComponents {
-
-    public LoginPage(WebDriver driver) {
-        super(driver);
-        PageFactory.initElements(driver, this);
-    }
-}
-```
-
-Page methods can return the next Page Object when an action causes navigation.
+- **`BaseTest.java`** — manages test setup and teardown.
+- **`DriverFactory.java`** — centralizes WebDriver creation and browser options.
+- **`BasePage.java`** — provides shared navigation, wait, and browser interaction methods.
+- **Page classes** — encapsulate page locators and page-specific actions.
+- **`ConfigReader.java`** — reads framework configuration.
+- **`WaitUtils.java`** — provides reusable synchronization helpers.
+- **`JsonUtils.java`** — supports JSON test data reading.
+- **`PurchaseDataProvider.java`** — provides test data to TestNG methods.
+- **TestNG listeners and retry classes** — handle test events, reporting integration, and configured retries.
+- **`ExtentManager.java`** — manages ExtentReports setup.
 
 ---
 
-## 🧵 Parallel Execution & Thread Safety
+## Parallel Execution and Retry Handling
 
-The framework uses `ThreadLocal<WebDriver>` to support parallel execution.
+The framework uses `ThreadLocal<WebDriver>` to keep browser instances isolated across threads. TestNG suite XML files and DataProviders can be configured for parallel execution.
 
-Example:
-
-```java
-private static final ThreadLocal<WebDriver> tdriver =
-        new ThreadLocal<>();
-
-public static WebDriver getDriver() {
-    return tdriver.get();
-}
-```
-
-Each execution thread receives its own WebDriver instance.
-
-This provides:
-
-* Thread-safe browser sessions
-* Independent test execution
-* Support for parallel TestNG execution
-* Reduced risk of driver/session conflicts
-
-The driver is removed after test execution:
-
-```java
-@AfterMethod(alwaysRun = true)
-public void tearDown() {
-
-    if (getDriver() != null) {
-        getDriver().quit();
-        tdriver.remove();
-    }
-}
-```
-
-Using `ThreadLocal.remove()` also helps prevent stale thread-local references when worker threads are reused.
+Retry behavior is implemented through TestNG retry/listener components where configured. Review `testng-*.xml` and `pom.xml` to confirm thread counts and retry settings before enabling parallel runs in a shared test environment.
 
 ---
 
-## 🔁 Dynamic Retry Mechanism
+## Reports and Screenshots
 
-The framework provides automatic retry support for transient failures.
-
-### `Retry.java`
-
-Implements TestNG's:
-
-```java
-IRetryAnalyzer
-```
-
-The retry mechanism reruns a failed test according to the configured retry count.
-
-### `AnnotationTransformer.java`
-
-Implements:
-
-```java
-IAnnotationTransformer
-```
-
-It dynamically applies the retry analyzer to tests, avoiding the need to add the retry annotation manually to every test method.
-
----
-
-## 📊 ExtentReports & Screenshots
-
-After execution, the framework generates an HTML execution report:
+ExtentReports is used to generate HTML execution reports. The framework configuration describes reports under a timestamped path similar to:
 
 ```text
-reports/index.html
+reports/ExecutionReport_<timestamp>.html
 ```
 
-The report provides:
+Depending on the configured listeners, reports can include test status, logs, and failure screenshots.
 
-* Test execution status
-* Passed/failed test details
-* Failure information
-* Screenshots
-* Execution logs
-
-### Failed-Test Screenshots
-
-Screenshots can be attached directly to failed test nodes using Base64 encoding.
-
-This avoids dependency on relative screenshot file paths and makes the report easier to archive in CI/CD environments.
-
-### Headless/CI Environment
-
-When running on Linux CI agents, browser-opening code should check whether the environment is graphical:
-
-```java
-if (!GraphicsEnvironment.isHeadless()) {
-    // Open report in browser
-}
-```
-
-This prevents `HeadlessException` when running Jenkins or other CI agents without a display.
+After execution, open the generated HTML report in a browser. The actual report path is determined by the current reporting configuration.
 
 ---
 
-## 🤖 Jenkins / CI-CD Integration
+## CI/CD Integration
 
-The framework can be executed from Jenkins using Maven.
+### GitHub Actions
 
-### Jenkins Execution Command
+The workflow is intended to run tests automatically on configured events such as pushes and pull requests. A typical workflow should:
 
-```bash
-mvn clean test -Dbrowser=chromeheadless -PRegression
-```
+1. Check out the repository.
+2. Set up the required JDK.
+3. Configure Maven dependency caching.
+4. Run the Maven/TestNG suite in headless browser mode.
+5. Upload test reports and logs as workflow artifacts.
 
-### Recommended Jenkins Artifacts
-
-Archive:
-
-```text
-reports/**
-```
-
-and:
+Workflow file described by this project:
 
 ```text
-target/surefire-reports/**
+.github/workflows/selenium-tests.yml
 ```
 
-For example:
+### Jenkins
+
+The Jenkins pipeline can be configured to select the browser, test suite, and environment, execute Maven tests, and archive reports.
+
+Pipeline file:
 
 ```text
-target/surefire-reports/testng-results.xml
+Jenkinsfile
 ```
 
-Depending on the Jenkins configuration, these artifacts can be retained after the build for debugging and reporting.
-
-### Jenkins HTML Report
-
-If Jenkins blocks CSS/JavaScript resources in an archived HTML report because of its Content Security Policy, the Jenkins administrator can review the CSP configuration.
-
-A commonly used Jenkins Script Console setting is:
-
-```groovy
-System.setProperty(
-    "hudson.model.DirectoryBrowserSupport.CSP",
-    ""
-)
-```
-
-> **Security note:** Disabling Jenkins CSP reduces browser-side security protections. Apply this only when appropriate for your Jenkins environment and preferably use a more restrictive CSP configuration when possible.
+Required Jenkins plugins and pipeline steps must be installed/configured in the Jenkins instance. Store credentials in Jenkins credentials management rather than in source files.
 
 ---
 
-## 🐞 Common Troubleshooting
-
-| Issue / Error                                  | Possible Cause                                                | Solution                                                       |
-| ---------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------- |
-| `ElementClickInterceptedException`             | Dropdown, overlay, or animation blocks the element            | Use an explicit wait or JavaScript click when appropriate      |
-| `Resource file not found on classpath`         | Resource is outside the Maven test classpath                  | Place configuration/data files under `src/test/resources/`     |
-| `AssertionError: Login error message mismatch` | Expected text doesn't match the application                   | Verify the actual application message and update the assertion |
-| `Tests run: 0`                                 | Incorrect TestNG suite/group configuration                    | Verify `<classes>`, `<packages>`, and group configuration      |
-| `TimeoutException`                             | Element did not become available within the wait period       | Review locator, application state, and explicit wait           |
-| `NoSuchElementException`                       | Incorrect/stale locator or page not loaded                    | Validate locator and synchronize with the page                 |
-| `SessionNotCreatedException`                   | Browser/driver compatibility issue                            | Update browser/Selenium version or use Selenium Manager        |
-| `HeadlessException`                            | Attempt to open a browser/report in a headless CI environment | Check `GraphicsEnvironment.isHeadless()`                       |
-| `StaleElementReferenceException`               | DOM refreshed after locating the element                      | Re-locate the element before interacting                       |
-| `ElementNotInteractableException`              | Element exists but cannot currently be interacted with        | Wait for visibility/clickability and verify page state         |
-
----
-
-## 🏗️ Framework Execution Flow
+## Project Structure
 
 ```text
-Maven Command
-     │
-     ▼
-TestNG Suite
-     │
-     ▼
-BaseTest
-     │
-     ▼
-WebDriver Initialization
-     │
-     ▼
-ThreadLocal<WebDriver>
-     │
-     ▼
-Test Class
-     │
-     ▼
-Page Object
-     │
-     ▼
-Abstract Components
-     │
-     ▼
-Utilities
-     │
-     ▼
-Application Under Test
-     │
-     ▼
-Assertions
-     │
-     ▼
-ExtentReports
-     │
-     ▼
-Screenshots / Test Results
-```
-
----
-
-## 📁 Recommended Project Structure
-
-```text
-SeleniumAutomationFramework/
-│
+selenium-automation-framework/
+├── .github/
+│   └── workflows/
+│       └── selenium-tests.yml
+├── Jenkinsfile
 ├── pom.xml
 ├── README.md
-│
 ├── src/
 │   ├── main/
-│   │   └── java/
-│   │       ├── pageObjects/
-│   │       ├── AbstractComponents/
-│   │       └── utils/
-│   │
+│   │   ├── java/com/framework/
+│   │   │   ├── core/
+│   │   │   │   └── BasePage.java
+│   │   │   ├── pages/
+│   │   │   │   ├── LoginPage.java
+│   │   │   │   ├── ProductCatalogPage.java
+│   │   │   │   ├── CartPage.java
+│   │   │   │   ├── CheckoutPage.java
+│   │   │   │   ├── OrderConfirmationPage.java
+│   │   │   │   └── OrderHistoryPage.java
+│   │   │   └── utils/
+│   │   │       ├── ConfigReader.java
+│   │   │       ├── JavaScriptUtils.java
+│   │   │       ├── JsonUtils.java
+│   │   │       └── WaitUtils.java
+│   │   ├── resources/
+│   │   │   └── log4j2.xml
+│   │   └── test/
+│   │       ├── java/com/framework/
+│   │       │   ├── base/
+│   │       │   │   ├── BaseTest.java
+│   │       │   │   └── DriverFactory.java
+│   │       │   ├── data/
+│   │       │   │   └── PurchaseDataProvider.java
+│   │       │   ├── listeners/
+│   │       │   ├── reporting/
+│   │       │   └── tests/
+│   │       └── resources/
+│   │           ├── config.properties
+│   │           └── testdata/
+│   │               └── PurchaseOrder.json
 │   └── test/
-│       ├── java/
-│       │   ├── tests/
-│       │   ├── testComponents/
-│       │   └── listeners/
-│       │
-│       └── resources/
-│           ├── testData/
-│           │   └── PurchaseOrder.json
-│           └── config.properties
-│
-├── testSuites/
-│   ├── testng.xml
-│   ├── Purchase.xml
-│   └── ErrorValidationTests.xml
-│
-├── reports/
-│
-└── target/
+└── testSuites/
+    ├── testng-regression.xml
+    ├── testng-purchase.xml
+    └── testng-error-validation.xml
 ```
+
+*This is a representative structure based on the framework details supplied. Keep the tree aligned with the actual repository contents.*
 
 ---
 
-## 🚀 Quick Start
+## Troubleshooting
 
-Clone the repository and run:
+| Issue | Checks |
+|---|---|
+| Maven reports an unsupported Java release | Check `java -version`, `mvn -version`, `JAVA_HOME`, and the compiler version in `pom.xml`. |
+| No tests execute | Check TestNG suite paths, package/class names, groups, and Maven Surefire configuration. |
+| Browser does not start in CI | Check headless options, browser installation, permissions, and runner dependencies. |
+| Element not found or timeout | Verify locators, page state, and explicit wait conditions. |
+| Report is missing | Check listener registration, report output path, and write permissions. |
+| Tests fail only in parallel | Check shared state, static page objects, test data collisions, and ThreadLocal cleanup. |
 
-```bash
-mvn clean install -DskipTests
-```
+---
 
-Then execute the regression suite:
+## Security Best Practices
 
-```bash
-mvn clean test -PRegression
-```
+- Do not commit passwords, API keys, access tokens, or personal data.
+- Keep test credentials in environment variables or a CI/CD secret store.
+- Use dedicated test accounts and non-production environments.
+- Avoid capturing sensitive information in logs, screenshots, or reports.
+- Review retry settings so genuine functional failures are not hidden.
 
-For CI/CD execution:
+---
 
-```bash
-mvn clean test -Dbrowser=chromeheadless -PRegression
-```
+## Contributing
 
-After execution, check:
+1. Create a feature branch.
+2. Make a focused change and add or update tests.
+3. Run the relevant TestNG suite locally.
+4. Review generated reports.
+5. Open a pull request with a clear summary of the change.
 
-```text
-reports/index.html
-```
+---
 
-and:
+## Author
 
-```text
-target/surefire-reports/
-```
+**Mahesh Holkar** — QA Automation Engineer
 
-for execution results.
+- GitHub: [MaheshH91](https://github.com/MaheshH91)
+- LinkedIn: [Mahesh Holkar](https://www.linkedin.com/in/maheshholkarqaengineer/)
+
+---
+
+If this framework helps you, feel free to explore the repository and connect through GitHub or LinkedIn.
