@@ -4,36 +4,44 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>rahulshettyacademy</groupId>
-	<artifactId>SeleniumFrameWorkDesignRSA</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>SeleniumFrameWorkDesignRSA</name>
-	<url>http://www.rahulshettyacademy.com</url>
+	<groupId>com.framework</groupId>
+	<artifactId>selenium-automation-framework</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<name>selenium-automation-framework</name>
 
 	<properties>
+		<maven.compiler.source>25</maven.compiler.source>
+		<maven.compiler.target>25</maven.compiler.target>
+		<maven.compiler.release>25</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<maven.compiler.release>21</maven.compiler.release>
+		
 		<selenium.version>4.49.0</selenium.version>
-		<testng.version>7.8.0</testng.version>
-		<extentreports.version>5.1.0</extentreports.version>
-		<jackson.version>2.15.2</jackson.version>
-		<commons.io.version>2.13.0</commons.io.version>
-		<surefire.version>3.2.5</surefire.version>
+		<testng.version>7.10.2</testng.version>
+		<extentreports.version>5.1.2</extentreports.version>
+		<log4j.version>2.24.1</log4j.version>
+		<jackson.version>2.18.1</jackson.version>
+		<commons.io.version>2.17.0</commons.io.version>
+		<surefire.version>3.5.1</surefire.version>
 		<compiler.plugin.version>3.13.0</compiler.plugin.version>
-		<suiteXmlFile>testSuites/testng.xml</suiteXmlFile>
+		<suiteXmlFile>testSuites/testng-regression.xml</suiteXmlFile>
 	</properties>
 
 	<dependencies>
+		<!-- Logging (single declarations) -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${log4j.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>2.20.0</version>
+			<version>${log4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j2-impl</artifactId>
-			<version>2.20.0</version>
+			<version>${log4j.version}</version>
 		</dependency>
 
 		<!-- JSON Handling -->
@@ -62,6 +70,7 @@
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
 			<version>${testng.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- Extent Reports -->
@@ -70,55 +79,38 @@
 			<artifactId>extentreports</artifactId>
 			<version>${extentreports.version}</version>
 		</dependency>
-		<!-- Source:
-		https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-			<version>2.26.1</version>
-		</dependency>
-		<!-- Source:
-		https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j2-impl -->
-		<!-- Source:
-		https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j2-impl -->
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j2-impl</artifactId>
-			<version>2.26.1</version>
-		</dependency>
-		<!-- Source:
-		https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api -->
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-api</artifactId>
-			<version>2.26.1</version>
-		</dependency>
 	</dependencies>
 
 	<profiles>
-		<profile>
-			<id>Regression</id>
-			<properties>
-				<suiteXmlFile>testSuites/testng.xml</suiteXmlFile>
-			</properties>
-		</profile>
-		<profile>
-			<id>Purchase</id>
-			<properties>
-				<suiteXmlFile>testSuites/Purchase.xml</suiteXmlFile>
-			</properties>
-		</profile>
-		<profile>
-			<id>ErrorValidation</id>
-			<properties>
-				<suiteXmlFile>testSuites/ErrorValidationTests.xml</suiteXmlFile>
-			</properties>
-		</profile>
-	</profiles>
+        <!-- Regression Profile (Default) -->
+        <profile>
+            <id>Regression</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <suiteXmlFile>testSuites/testng-regression.xml</suiteXmlFile>
+            </properties>
+        </profile>
 
+        <!-- Purchase Profile -->
+        <profile>
+            <id>Purchase</id>
+            <properties>
+                <suiteXmlFile>testSuites/testng-purchase.xml</suiteXmlFile>
+            </properties>
+        </profile>
+
+        <!-- Error Validation Profile -->
+        <profile>
+            <id>ErrorValidation</id>
+            <properties>
+                <suiteXmlFile>testSuites/testng-error-validation.xml</suiteXmlFile>
+            </properties>
+        </profile>
+    </profiles>
 	<build>
 		<plugins>
-			<!-- Compiler Plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -128,23 +120,23 @@
 				</configuration>
 			</plugin>
 
-			<!-- Surefire Plugin (Single Consolidated Declaration) -->
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>${surefire.version}</version>
-				<configuration>
-					<suiteXmlFiles>
-						<suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
-					</suiteXmlFiles>
-					<properties>
-						<property>
-							<name>dataproviderthreadcount</name>
-							<value>4</value>
-						</property>
-					</properties>
-				</configuration>
-			</plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
+                <configuration>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
+                    </suiteXmlFiles>
+                    <rerunFailingTestsCount>1</rerunFailingTestsCount>
+                    <properties>
+                        <property>
+                            <name>dataproviderthreadcount</name>
+                            <value>4</value>
+                        </property>
+                    </properties>
+                </configuration>
+            </plugin>
 		</plugins>
 	</build>
 </project>

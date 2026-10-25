@@ -5,12 +5,10 @@
     </Properties>
 
     <Appenders>
-        <!-- Console Output -->
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
 
-        <!-- Rolling File Output -->
         <RollingFile name="FileAppender" fileName="${LOG_DIR}/automation.log"
                      filePattern="${LOG_DIR}/automation-%d{yyyy-MM-dd}-%i.log.gz">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n"/>
@@ -23,13 +21,10 @@
     </Appenders>
 
     <Loggers>
-        <!-- Framework-specific logger level -->
-        <Logger name="rahulshettyacademy" level="info" additivity="false">
+        <Logger name="com.framework" level="info" additivity="false">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="FileAppender"/>
         </Logger>
-
-        <!-- Root fallback logger -->
         <Root level="warn">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="FileAppender"/>
