@@ -1,0 +1,90 @@
+name: Selenium Test Automation Suite
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Test Suite Profile to run'
+        required: true
+        default: 'Regression'
+        type: choice
+        options:
+          - Regression
+          - Purchase
+          - ErrorValidation
+      browser:
+        description: 'Browser environment'
+        required: true
+        default: 'chrome-headless'
+        type: choice
+        options:
+          - chrome-headless
+          - firefox
+          - edge
+
+jobs:
+  test-execution:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Create Log Directory
+        run: mkdir -p logs
+
+      - name: Execute Tests via Maven
+        run: |
+          PROFILE="${{ github.event.inputs.test_suite || 'Regression' }}"
+          BROWSER="${{ github.event.inputs.browser || 'chrome-headless' }}"
+          mvn clean test -P"$PROFILE" -Dbrowser="$BROWSER"
+
+      - name: Archive Test Results & Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: execution-artifacts
+          path: |
+            reports/
+            target/surefire-reports/
+            logs/
+          if-no-files-found: ignore
+
+      - name: Send Test Execution Email Report via Gmail
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "GitHub Actions: Automation Test Report - ${{ job.status }}"
+          to: ${{ secrets.MAIL_TO }}
+          from: "UI Automation Suite <${{ secrets.MAIL_USERNAME }}>"
+          body: |
+            Hi Team,
+
+            The automated test execution on GitHub Actions has completed.
+
+            - Status: ${{ job.status }}
+            - Repository: ${{ github.repository }}
+            - Branch: ${{ github.ref_name }}
+            - Workflow Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Extent Reports, TestNG Reports, and execution logs are attached below.
+          attachments: |
+            reports/ExecutionReport_*.html,
+            target/surefire-reports/emailable-report.html,
+            logs/automation.log
