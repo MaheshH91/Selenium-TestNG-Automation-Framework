@@ -370,7 +370,7 @@ selenium-automation-framework/
 
 ## Author
 
-**Mahesh Holkar** — QA Automation Engineer
+**Mahesh Holkar** — SDET
 
 - GitHub: [MaheshH91](https://github.com/MaheshH91)
 - LinkedIn: [Mahesh Holkar](https://www.linkedin.com/in/maheshholkarqaengineer/)
