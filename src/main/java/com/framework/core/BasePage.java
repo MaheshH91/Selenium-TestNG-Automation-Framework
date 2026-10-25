@@ -16,45 +16,58 @@ import com.framework.utils.WaitUtils;
 
 public abstract class BasePage {
 
-    protected final Logger log = LogManager.getLogger(getClass());
-    protected final WebDriver driver;
-    protected final WaitUtils waitUtils;
-    protected final JavaScriptUtils jsUtils;
+	protected final Logger log = LogManager.getLogger(getClass());
+	protected final WebDriver driver;
+	protected final WaitUtils waitUtils;
+	protected final JavaScriptUtils jsUtils;
 
-    @FindBy(css = "[routerlink*='cart']")
-    private WebElement cartHeader;
+	@FindBy(css = "[routerlink*='cart']")
+	private WebElement cartHeader;
 
-    @FindBy(xpath = "//button[contains(@routerlink, 'myorders')]")
-    private WebElement ordersHeader;
+	@FindBy(xpath = "//button[contains(@routerlink, 'myorders')]")
+	private WebElement ordersHeader;
 
-    public BasePage(WebDriver driver) {
-        this.driver = driver;
-        this.waitUtils = new WaitUtils(driver, Duration.ofSeconds(10));
-        this.jsUtils = new JavaScriptUtils(driver);
-        PageFactory.initElements(driver, this);
-    }
+	public BasePage(WebDriver driver) {
+		this.driver = driver;
+		this.waitUtils = new WaitUtils(driver, Duration.ofSeconds(10));
+		this.jsUtils = new JavaScriptUtils(driver);
+		PageFactory.initElements(driver, this);
+	}
 
-    public CartPage navigateToCart() {
-        log.info("Navigating to Cart page");
-        waitUtils.waitForVisibility(cartHeader);
-        jsUtils.scrollToTop();
-        cartHeader.click();
-        return new CartPage(driver);
-    }
+	public CartPage navigateToCart() {
+		log.info("Navigating to Cart page");
 
-    public OrderHistoryPage navigateToOrderHistory() {
-        log.info("Navigating to Order History page");
-        waitUtils.waitForVisibility(ordersHeader);
-        try {
-            ordersHeader.click();
-        } catch (Exception e) {
-            log.warn("Standard navigation click intercepted. Falling back to JavaScript click.");
-            jsUtils.click(ordersHeader);
-        }
-        return new OrderHistoryPage(driver);
-    }
+		// Wait until the Cart header link is fully clickable
+		waitUtils.waitForClickability(cartHeader);
+		jsUtils.scrollToTop();
 
-    public void waitForElementToDisappear(By locator) {
-        waitUtils.waitForInvisibility(locator);
-    }
+		try {
+			cartHeader.click();
+		} catch (Exception e) {
+			log.warn("Cart icon click intercepted, falling back to JS click");
+			jsUtils.click(cartHeader);
+		}
+
+		// Ensure browser navigated to the cart route
+		new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(10))
+				.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("/dashboard/cart"));
+
+		return new CartPage(driver);
+	}
+
+	public OrderHistoryPage navigateToOrderHistory() {
+		log.info("Navigating to Order History page");
+		waitUtils.waitForVisibility(ordersHeader);
+		try {
+			ordersHeader.click();
+		} catch (Exception e) {
+			log.warn("Standard navigation click intercepted. Falling back to JavaScript click.");
+			jsUtils.click(ordersHeader);
+		}
+		return new OrderHistoryPage(driver);
+	}
+
+	public void waitForElementToDisappear(By locator) {
+		waitUtils.waitForInvisibility(locator);
+	}
 }
