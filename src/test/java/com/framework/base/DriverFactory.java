@@ -91,6 +91,7 @@ public final class DriverFactory {
             throw new IllegalArgumentException("Unsupported browser type supplied: " + browser);
         }
 
+        // Apply viewport resolution on the driver instance
         if (isHeadless) {
             driver.manage().window().setSize(new Dimension(1920, 1080));
         } else {
