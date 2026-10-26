@@ -53,4 +53,11 @@ public class ProductCatalogPage extends BasePage {
         waitUtils.waitForInvisibility(spinnerOverlayBy);
         log.info("Product successfully committed to cart: '{}'", productName);
     }
+    
+    @Override
+    public OrderHistoryPage navigateToOrderHistory() {
+        // Wait for catalog spinner or success toasts to subside before routing
+        waitForElementToDisappear(By.cssSelector(".ng-animating"));
+        return super.navigateToOrderHistory();
+    }
 }

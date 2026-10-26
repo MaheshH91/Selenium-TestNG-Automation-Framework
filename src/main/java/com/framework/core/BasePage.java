@@ -55,19 +55,34 @@ public abstract class BasePage {
 		return new CartPage(driver);
 	}
 
-	public OrderHistoryPage navigateToOrderHistory() {
-		log.info("Navigating to Order History page");
-		waitUtils.waitForVisibility(ordersHeader);
-		try {
-			ordersHeader.click();
-		} catch (Exception e) {
-			log.warn("Standard navigation click intercepted. Falling back to JavaScript click.");
-			jsUtils.click(ordersHeader);
-		}
-		return new OrderHistoryPage(driver);
-	}
+	/*
+	 * public OrderHistoryPage navigateToOrderHistory() {
+	 * log.info("Navigating to Order History page");
+	 * waitUtils.waitForVisibility(ordersHeader); try { ordersHeader.click(); }
+	 * catch (Exception e) { log.
+	 * warn("Standard navigation click intercepted. Falling back to JavaScript click."
+	 * ); jsUtils.click(ordersHeader); } return new OrderHistoryPage(driver); }
+	 */
 
 	public void waitForElementToDisappear(By locator) {
 		waitUtils.waitForInvisibility(locator);
 	}
+	public OrderHistoryPage navigateToOrderHistory() {
+        log.info("Navigating to Order History page");
+        waitUtils.waitForClickability(ordersHeader);
+        jsUtils.scrollToTop();
+        
+        try {
+            ordersHeader.click();
+        } catch (Exception e) {
+            log.warn("Standard navigation click intercepted. Falling back to JavaScript click: {}", e.getMessage());
+            jsUtils.click(ordersHeader);
+        }
+
+        // Wait until route transition finishes
+        new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(10))
+                .until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("/dashboard/myorders"));
+
+        return new OrderHistoryPage(driver);
+    }
 }
